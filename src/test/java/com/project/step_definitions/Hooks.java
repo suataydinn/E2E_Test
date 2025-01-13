@@ -38,7 +38,6 @@ public class Hooks {
                     break;
             }
         }
-
         if(publicScenario.equals("@Api")){
             // do nothing
         }else{

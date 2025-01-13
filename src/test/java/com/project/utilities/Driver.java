@@ -28,7 +28,7 @@ public class Driver {
     private static InheritableThreadLocal<ChromeDriver> driverPool1 = new InheritableThreadLocal<>();
 
     public static WebDriver get() {
-        if (new Hooks().publicScenario.equals("@browserWeb")) {
+        if (Hooks.publicScenario.equals("@browserWeb")) {
             if (driverPool.get() == null) {
                 String browser = System.getProperty("browserWeb") != null ? browser = System.getProperty("browserWeb") : ConfigurationReader.get("browserWeb");
                 switch (browser) {
@@ -119,7 +119,6 @@ public class Driver {
                     case "mobile":
                         WebDriverManager.chromedriver().setup();
                         ChromeOptions options = new ChromeOptions();
-                        //options.addArguments("user-agent='Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Mobile Safari/537.36'");
                         options.addArguments("user-agent='Mozilla/5.0 (Linux; Android 13; Mi 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Mobile Safari/537.36'");
 
                         options.addArguments("--remote-allow-origins=*");
@@ -128,8 +127,6 @@ public class Driver {
                         cp.setCapability(ChromeOptions.CAPABILITY, options);
                         options.merge(cp);
                         driverPool1.set(new ChromeDriver(options));
-                        //   DevTools devTools = driverPool1.get().getDevTools();
-                        //  devTools.createSession();
 
                         Map<String, Object> deviceMetrics = new HashMap<>();
                         deviceMetrics.put("width", 375);

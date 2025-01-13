@@ -77,6 +77,9 @@ public class ProductPage {
             e.printStackTrace();
         }
         Assert.assertEquals(detailPrice, d , 0.0);
+
+
+
     }
 
 
