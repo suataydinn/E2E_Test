@@ -32,7 +32,6 @@ public class Hooks {
                     break;
 
                 default:
-                    publicScenario = tag;
                     RestAssured.baseURI = ConfigurationReader.get("baseURI");
 
                     break;
