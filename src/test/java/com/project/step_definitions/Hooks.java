@@ -10,6 +10,7 @@ import io.restassured.RestAssured;
 import org.openqa.selenium.*;
 
 import java.time.Duration;
+import java.util.NoSuchElementException;
 
 public class Hooks {
     public static String publicScenario;
@@ -40,7 +41,6 @@ public class Hooks {
         if(publicScenario.equals("@Api")){
             // do nothing
         }else{
-            Driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(1));
 
             switch (browser) {
                 case "chrome-headless" :
@@ -51,12 +51,14 @@ public class Hooks {
                     Driver.get().manage().window().maximize();
             }
 
-            // go to url
             Driver.get().get(ConfigurationReader.get("url"));
             BrowserUtils.waitForPageToLoad(10);
 
-            //accept cookie
-            if(Driver.get().findElements(By.cssSelector("#onetrust-accept-btn-handler")).size()>0) Driver.get().findElement(By.cssSelector("#onetrust-accept-btn-handler")).click();
+        }
+        try {
+            Driver.get().findElement(By.cssSelector("#onetrust-accept-btn-handler")).click();
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
         }
 
     }
