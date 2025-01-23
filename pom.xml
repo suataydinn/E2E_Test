@@ -38,12 +38,10 @@
     </dependency>
 
 
-
-    <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-devtools-v121 -->
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-devtools-v126</artifactId>
-      <version>4.22.0</version>
+      <artifactId>selenium-devtools-v128</artifactId>
+      <version>4.25.0</version>
     </dependency>
 
 
@@ -69,20 +67,6 @@
       <version>4.0.9</version>
     </dependency>
 
-    <!-- Apache POI -->
-    <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi</artifactId>
-      <version>5.2.3</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>5.2.3</version>
-    </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
     <dependency>
