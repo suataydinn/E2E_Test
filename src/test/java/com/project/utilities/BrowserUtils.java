@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -19,7 +18,6 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-
 
 public class BrowserUtils {
     WebDriver driver = Driver.get();
@@ -54,43 +52,25 @@ public class BrowserUtils {
     }
 
 
-    /**
-     * Waits for the provided element to be visible on the page
-     */
-    public static WebElement waitForVisibility(WebElement element, int timeToWaitInSec) {
-        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeToWaitInSec));
-        return wait.until(ExpectedConditions.visibilityOf(element));
+    private static WebDriverWait getWait(int timeout) {
+        return new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
     }
 
-    /**
-     * Waits for element matching the locator to be visible on the page
-     */
-    public static WebElement waitForVisibility(By locator, int timeout) {
-        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    public static WebElement waitForVisibility(By element, int timeout) {
+        return getWait(timeout).until(ExpectedConditions.visibilityOf(Driver.get().findElement(element)));
     }
 
+    public static WebElement waitForVisibility(WebElement element, int timeout) {
+        return getWait(timeout).until(ExpectedConditions.visibilityOf(element));
+    }
 
-    /**
-     * Waits for provided element to be clickable
-     */
-    public static WebElement waitForClickablility(WebElement element, int timeout) {
-            try {
-            WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
-            return wait.until(ExpectedConditions.elementToBeClickable(element));
-        } catch (TimeoutException e) {
-                System.err.println("Element is not clickable within the given timeout: " + timeout + " seconds");
-            }
-        return element;
+    public static WebElement waitForClickability(WebElement element, int timeout) {
+        return getWait(timeout).until(ExpectedConditions.elementToBeClickable(element));
     }
 
 
-    /**
-     * Waits for element matching the locator to be clickable
-     */
-    public static WebElement waitForClickablility(By locator, int timeout) {
-        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
-        return wait.until(ExpectedConditions.elementToBeClickable(locator));
+    public static WebElement waitForClickability(By element, int timeout) {
+        return getWait(timeout).until(ExpectedConditions.elementToBeClickable(Driver.get().findElement(element)));
     }
 
 
@@ -98,33 +78,11 @@ public class BrowserUtils {
      * waits for backgrounds processes on the browser to complete
      */
     public static void waitForPageToLoad(long timeOutInSeconds) {
-        ExpectedCondition<Boolean> expectation = new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver driver) {
-                return ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete");
-            }
-        };
-        try {
-            WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeOutInSeconds));
-            wait.until(expectation);
-        } catch (Throwable error) {
-            error.printStackTrace();
-        }
+        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeOutInSeconds));
+        wait.until(driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete"));
     }
 
-    public static void waitForPresenceOfElement(By by, Duration time) {
-        new WebDriverWait(Driver.get(), time).until(ExpectedConditions.presenceOfElementLocated(by));
-    }
 
-    public static void clickWithTimeOut(WebElement element, int timeout) {
-        for (int i = 0; i < timeout; i++) {
-            try {
-                element.click();
-                return;
-            } catch (WebDriverException e) {
-                waitFor(1);
-            }
-        }
-    }
 
     /**
      * Clicks on an element using JavaScript
@@ -244,7 +202,7 @@ public class BrowserUtils {
     }
 
     public static String getTime(){
-       // String[] time = saveDateTime()[1].split(":");
+        // String[] time = saveDateTime()[1].split(":");
         return saveDateTime()[1];
     }
 
@@ -506,20 +464,28 @@ public class BrowserUtils {
 
             return 0.0;
         }else{
-        inputString=inputString.substring(1);
-        Locale turkishLocale = new Locale("tr", "TR");
+            inputString=inputString.substring(1);
+            Locale turkishLocale = new Locale("tr", "TR");
 
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(turkishLocale);
+            NumberFormat numberFormat = NumberFormat.getNumberInstance(turkishLocale);
 
-        try {
-            Number number = numberFormat.parse(inputString);
-            return number.doubleValue();
-        } catch (ParseException e) {
-            System.out.println("String dönüştürülemedi: " + e.getMessage());
-            return 0.0; // veya başka bir varsayılan değer döndürebilirsiniz
+            try {
+                Number number = numberFormat.parse(inputString);
+                return number.doubleValue();
+            } catch (ParseException e) {
+                System.out.println("String dönüştürülemedi: " + e.getMessage());
+                return 0.0; // veya başka bir varsayılan değer döndürebilirsiniz
+            }
         }
-        }
 
+    }
+
+    public static void hoverToElement(String string) {
+        BrowserUtils.waitFor(2);
+        WebElement element=Driver.get().findElement(By.xpath("(//*[text()='"+string+"'])[1]"));
+        BrowserUtils.mouseHoverJScript(element);
+        //BrowserUtils.hover(element);
+        BrowserUtils.waitFor(2);
     }
 
     public static LocalDate formatDate(String date){//sıralama yapmak için date format. Büyük küçük , bugünden sonra önde gibi
@@ -662,24 +628,8 @@ public class BrowserUtils {
 
     }
 
-    public static String convertENCharacter(String metin) {
-        metin = metin.replace('ç', 'c');
-        metin = metin.replace('ğ', 'g');
-        metin = metin.replace('ı', 'i');
-        metin = metin.replace('ö', 'o');
-        metin = metin.replace('ş', 's');
-        metin = metin.replace('ü', 'u');
-        metin = metin.replace('Ç', 'C');
-        metin = metin.replace('Ğ', 'G');
-        metin = metin.replace('İ', 'I');
-        metin = metin.replace('Ö', 'O');
-        metin = metin.replace('Ş', 'S');
-        metin = metin.replace('Ü', 'U');
-        return metin;
-    }
-
     public static String capitalize(String inputString) {
-         // Stringin ilk harfini büyültme
+        // Stringin ilk harfini büyültme
 
         char firstLetter = inputString.charAt(0);
 
