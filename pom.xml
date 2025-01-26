@@ -44,20 +44,25 @@
       <version>4.25.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.javafaker</groupId>
+      <artifactId>javafaker</artifactId>
+      <version>1.0.2</version>
+    </dependency>
 
 
     <!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-java -->
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
-      <version>5.7.0</version>
+      <version>7.15.0</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-junit -->
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit</artifactId>
-      <version>5.7.0</version>
+      <version>7.15.0</version>
       <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.aventstack/extentreports -->
@@ -140,18 +145,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>3.2.2</version>
         <configuration>
+          <parallel>classes</parallel>
+          <threadCount>4</threadCount>
+          <perCoreThreadCount>false</perCoreThreadCount>
           <testFailureIgnore>true</testFailureIgnore>
-          <rerunFailingTestsCount>1</rerunFailingTestsCount>
-          <runOrder>Alphabetical</runOrder>
           <includes>
             <include>**/*CukesRunner.java</include>
-            <include>**/*FailRunner.java</include>
           </includes>
-          <parallel>methods</parallel>
-          <perCoreThreadCount>false</perCoreThreadCount>
-          <threadCount>4</threadCount>
         </configuration>
       </plugin>
 
