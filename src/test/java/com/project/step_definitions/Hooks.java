@@ -6,82 +6,58 @@ import com.project.utilities.Driver;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import io.restassured.RestAssured;
 import org.openqa.selenium.*;
 
-import java.time.Duration;
-import java.util.NoSuchElementException;
-
 public class Hooks {
-    public static String publicScenario;
-
     @Before
     public void setUp(Scenario scenario) {
+        String scenarioTag = null;
 
-        String browser="";
-
-        // set publicScenario
         for (String tag : scenario.getSourceTagNames()) {
-            publicScenario = tag;
-            switch (tag) {
-                case "@browserWeb":
-                    browser = ConfigurationReader.get("browserWeb");
-                    break;
-
-                case "@browserMobile":
-                    browser = ConfigurationReader.get("browserMobile");
-                    break;
-
-                default:
-                    RestAssured.baseURI = ConfigurationReader.get("baseURI");
-
-                    break;
+            if (tag.equals("@browserWeb") || tag.equals("@browserMobile")) {
+                scenarioTag = tag;
+                break;
             }
         }
-        if(publicScenario.equals("@Api")){
-            // do nothing
-        }else{
 
-            switch (browser) {
-                case "chrome-headless" :
-                    Driver.get().manage().window().setSize(new Dimension(1440, 900));
-                    break;
-
-                default:
-                    Driver.get().manage().window().maximize();
-            }
-
-            Driver.get().get(ConfigurationReader.get("url"));
-            BrowserUtils.waitForPageToLoad(10);
-
+        if (scenarioTag == null) {
+            throw new IllegalStateException("No browser type specified for scenario");
         }
+
+        Driver.setCurrentScenarioTag(scenarioTag);
+
+        WebDriver driver = Driver.get();
+
+        driver.manage().window().setSize(new Dimension(1440, 900));
+
+
+        driver.get(ConfigurationReader.get("url"));
+        BrowserUtils.waitForPageToLoad(30);
+        BrowserUtils.scrollToSize(0, -500);
+
         try {
-            Driver.get().findElement(By.cssSelector("#onetrust-accept-btn-handler")).click();
-        } catch (NoSuchElementException e) {
-            e.printStackTrace();
-        }
-
+            WebElement popupClose = driver.findElement(By.cssSelector("div.gs_trigger_discount_popup_close_container"));
+            popupClose.click();
+        } catch (Exception ignored) {}
     }
 
     @After
-    public void tearDown(Scenario scenario){
-
-        if(scenario.isFailed()){
+    public void tearDown(Scenario scenario) {
+        if (scenario.isFailed()) {
             final byte[] screenshot = ((TakesScreenshot) Driver.get()).getScreenshotAs(OutputType.BYTES);
-            scenario.attach(screenshot,"image/png","screenshot");
+            scenario.attach(screenshot, "image/png", "screenshot");
         }
+
         Driver.closeDriver();
     }
 
-    @Before("@DB")
-    public void setUpDb(){
+    @Before("@abc")
+    public void setUpdb() {
         System.out.println("\tconnecting to database...");
     }
 
-    @After("@DB")
-    public void closeDb(){
+    @After("@abc")
+    public void closeDb() {
         System.out.println("\tdisconnecting to database...");
-
     }
-
 }
