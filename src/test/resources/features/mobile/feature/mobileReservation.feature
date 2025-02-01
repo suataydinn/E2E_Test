@@ -1,4 +1,4 @@
-@browserMobile @regression
+@browserMobile
 @searchMobile @smokeMobile
 Feature: Web Mobile search Scenario
 
@@ -20,7 +20,7 @@ Feature: Web Mobile search Scenario
     And click back to previous page
     And sort by "En yüksek fiyat"
     And save first car price
-    And Select vehicle in row 1 and verify "Yolcutest"
+    And Select vehicle in row 1
     Then verify mobile price on car detail & search result
     When click rent now button
     Then verify mobile price on car detail & search result

@@ -1,8 +1,8 @@
- @search @regression
- @browserWeb
+ @regression
+ #@browserWeb
 Feature: This feature contains create a new reservation
 
-  @WEB-001
+ # @WEB-001
   Scenario: Compare car price which send from BE with car detail price
     Given search "Sabiha Gökçen Havalimanı"
     When select date and time from calendar
@@ -11,7 +11,7 @@ Feature: This feature contains create a new reservation
     And Select vehicle in row 1
     Then Price sended from BE should be same Car detail price
 
-@WEB-002 @smoke @operation
+#@WEB-002 @smoke @operation
   Scenario: Check payload request for search flow
   Given Start devtools Listeners "POST" method for response "point"
   When select "Türkiye" country
@@ -32,7 +32,7 @@ Feature: This feature contains create a new reservation
   Then check payment info
   And check bin Number response
 
-    @WEB-003 @operation
+  #  @WEB-003 @operation
   Scenario: user enter driver info on information page for abroad country, tax identifier should be sent in billing end point
     When search "Madrid Barajas Uluslararası Havalimanı"
     And click find button

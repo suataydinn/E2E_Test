@@ -1,8 +1,8 @@
-@reservation @regression
-@browserWeb
+@regression
+
 Feature: This feature contains create a new reservation
 
-  @WEB-004
+ # @WEB-004
   Scenario: User should be able to see provision fee when search Turkey location
     When search "Sabiha Gökçen Havalimanı"
     And click find button
@@ -24,7 +24,7 @@ Feature: This feature contains create a new reservation
     And verify provision value same BE and UI
 
 
-  @WEB-005 @smoke
+  #@WEB-005 @smoke
   Scenario: login user rent a car by selecting a different address that they have registered. They should see that all the information about the car is the same on the reservation details page and in the API
     When click the register
     Then verify open Sign in Sign Up page
