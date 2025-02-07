@@ -1,5 +1,6 @@
 package com.project.utilities;
 
+import com.project.step_definitions.Hooks;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -8,174 +9,123 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class Driver {
     private Driver() {}
 
-    private static final ThreadLocal<WebDriver> webDriverPool = new ThreadLocal<>();
-    private static final ThreadLocal<WebDriver> mobileDriverPool = new ThreadLocal<>();
-    private static final ThreadLocal<String> currentScenarioTag = new ThreadLocal<>();
-
-    public static void setCurrentScenarioTag(String tag) {
-        currentScenarioTag.set(tag);
-    }
-
-    public static String getCurrentScenarioTag() {
-        return currentScenarioTag.get();
-    }
+    private static final InheritableThreadLocal<WebDriver> driverPool = new InheritableThreadLocal<>();
 
     public static WebDriver get() {
-        String scenarioTag = getCurrentScenarioTag();
-
-        if (scenarioTag == null) {
-            throw new IllegalStateException("Scenario tag not set");
+        if (Hooks.publicScenario == null) {
+            throw new IllegalStateException("No scenario tag found in Hooks.");
         }
 
-        return scenarioTag.equals("@browserMobile") ? getMobileDriver() : getWebDriver();
-    }
+        if (driverPool.get() == null) {
+            String browser;
+            if (Hooks.publicScenario.equals("@browserWeb")) {
+                browser = System.getProperty("browserWeb", ConfigurationReader.get("browserWeb"));
+            } else if (Hooks.publicScenario.equals("@browserMobile")) {
+                browser = System.getProperty("browserMobile", ConfigurationReader.get("browserMobile"));
+            } else {
+                throw new IllegalStateException("Unknown browser type: " + Hooks.publicScenario);
+            }
 
-    private static WebDriver getWebDriver() {
-        if (webDriverPool.get() == null) {
-            String browser = System.getProperty("browserWeb") != null
-                    ? System.getProperty("browserWeb")
-                    : ConfigurationReader.get("browserWeb");
+            switch (browser) {
+                case "chrome":
+                    ChromeOptions chromeOptions = new ChromeOptions();
+                    chromeOptions.addArguments("--remote-allow-origins=*");
+                    chromeOptions.addArguments("--disable-notifications");
+                    driverPool.set(new ChromeDriver(chromeOptions));
+                    break;
 
-            WebDriver driver = createWebDriver(browser);
-            webDriverPool.set(driver);
-        }
-        return webDriverPool.get();
-    }
+                case "chrome-headless":
+                    ChromeOptions headlessChromeOptions = new ChromeOptions();
+                    headlessChromeOptions.addArguments("--headless=new");
+                    headlessChromeOptions.addArguments("--disable-gpu");
+                    headlessChromeOptions.addArguments("--disable-notifications");
+                    headlessChromeOptions.addArguments("--remote-allow-origins=*");
+                    driverPool.set(new ChromeDriver(headlessChromeOptions));
+                    break;
 
-    private static WebDriver getMobileDriver() {
-        if (mobileDriverPool.get() == null) {
-            String browser = System.getProperty("browserMobile") != null
-                    ? System.getProperty("browserMobile")
-                    : ConfigurationReader.get("browserMobile");
+                case "firefox":
+                    FirefoxOptions firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.addPreference("dom.webnotifications.enabled", false);
+                    driverPool.set(new FirefoxDriver(firefoxOptions));
+                    break;
 
-            WebDriver driver = createMobileDriver(browser);
-            mobileDriverPool.set(driver);
-        }
-        return mobileDriverPool.get();
-    }
+                case "firefox-headless":
+                    FirefoxOptions headlessFirefoxOptions = new FirefoxOptions();
+                    headlessFirefoxOptions.addArguments("--headless=new");
+                    headlessFirefoxOptions.addArguments("--disable-gpu");
+                    driverPool.set(new FirefoxDriver(headlessFirefoxOptions));
+                    break;
 
-    private static WebDriver createWebDriver(String browser) {
-        switch (browser) {
-            case "chrome":
-                return createChromeDriver(false);
-            case "chrome-headless":
-                return createChromeDriver(true);
-            case "firefox":
-                return createFirefoxDriver(false);
-            case "firefox-headless":
-                return createFirefoxDriver(true);
-            case "safari":
-                return createSafariDriver();
-            case "remote_chrome":
-                return createRemoteChromeDriver();
-            default:
-                throw new IllegalArgumentException("Unsupported browser: " + browser);
-        }
-    }
+                case "edge":
+                    driverPool.set(new EdgeDriver());
+                    break;
 
-    private static WebDriver createMobileDriver(String browser) {
-        switch (browser) {
-            case "mobile":
-                return createMobileChromeDriver(false);
-            case "mobile-headless":
-                return createMobileChromeDriver(true);
-            default:
-                throw new IllegalArgumentException("Unsupported mobile browser: " + browser);
-        }
-    }
+                case "remote_chrome":
+                    ChromeOptions remoteOptions = new ChromeOptions();
+                    remoteOptions.setCapability("platform", Platform.ANY);
+                    try {
+                        driverPool.set(new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), remoteOptions));
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    break;
 
-    private static ChromeDriver createChromeDriver(boolean headless) {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--disable-notifications");
+                case "mobile":
+                    ChromeOptions mobileOptions = new ChromeOptions();
+                    mobileOptions.addArguments("user-agent='Mozilla/5.0 (Linux; Android 13; Mi 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Mobile Safari/537.36'");
+                    mobileOptions.addArguments("--remote-allow-origins=*");
+                    mobileOptions.addArguments("--disable-notifications");
+                    driverPool.set(new ChromeDriver(mobileOptions));
 
-        if (headless) {
-            options.addArguments("--headless=new");
-            options.addArguments("--disable-gpu");
-        }
+                    Map<String, Object> mobileMetrics = new HashMap<>();
+                    mobileMetrics.put("width", 375);
+                    mobileMetrics.put("height", 700);
+                    mobileMetrics.put("deviceScaleFactor", 0);
+                    mobileMetrics.put("mobile", true);
+                    ((ChromeDriver) driverPool.get()).executeCdpCommand("Emulation.setDeviceMetricsOverride", mobileMetrics);
+                    break;
 
-        return new ChromeDriver(options);
-    }
+                case "mobile-headless":
+                    ChromeOptions mobileHeadlessOptions = new ChromeOptions();
+                    mobileHeadlessOptions.addArguments("user-agent='Mozilla/5.0 (Linux; Android 13.0; Mi 14.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.143 Mobile Safari/537.36'");
+                    mobileHeadlessOptions.addArguments("--headless=new");
+                    mobileHeadlessOptions.addArguments("--disable-notifications");
+                    driverPool.set(new ChromeDriver(mobileHeadlessOptions));
 
-    private static ChromeDriver createMobileChromeDriver(boolean headless) {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("user-agent='Mozilla/5.0 (Linux; Android 13; Mi 14) AppleWebKit/537.36'");
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--disable-notifications");
+                    Map<String, Object> mobileHeadlessMetrics = new HashMap<>();
+                    mobileHeadlessMetrics.put("width", 385);
+                    mobileHeadlessMetrics.put("height", 700);
+                    mobileHeadlessMetrics.put("deviceScaleFactor", 0);
+                    mobileHeadlessMetrics.put("mobile", true);
+                    ((ChromeDriver) driverPool.get()).executeCdpCommand("Emulation.setDeviceMetricsOverride", mobileHeadlessMetrics);
+                    break;
 
-        if (headless) {
-            options.addArguments("--headless=new");
-            options.addArguments("--disable-gpu");
-        }
-
-        ChromeDriver driver = new ChromeDriver(options);
-
-        Map<String, Object> deviceMetrics = new HashMap<>();
-        deviceMetrics.put("width", headless ? 385 : 375);
-        deviceMetrics.put("height", 700);
-        deviceMetrics.put("deviceScaleFactor", 0);
-        deviceMetrics.put("mobile", true);
-
-        driver.executeCdpCommand("Emulation.setDeviceMetricsOverride", deviceMetrics);
-
-        return driver;
-    }
-
-    private static FirefoxDriver createFirefoxDriver(boolean headless) {
-        WebDriverManager.firefoxdriver().setup();
-        FirefoxOptions options = new FirefoxOptions();
-
-        if (headless) {
-            options.addArguments("--headless");
+                default:
+                    throw new IllegalStateException("Unsupported browser: " + browser);
+            }
         }
 
-        return new FirefoxDriver(options);
-    }
-
-    private static SafariDriver createSafariDriver() {
-        if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
-            throw new WebDriverException("Safari only supports macOS");
-        }
-        WebDriverManager.getInstance(SafariDriver.class).setup();
-        return new SafariDriver();
-    }
-
-    private static RemoteWebDriver createRemoteChromeDriver() {
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.setCapability("platform", Platform.ANY);
-        try {
-            return new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), chromeOptions);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Remote WebDriver setup failed", e);
-        }
+        return driverPool.get();
     }
 
     public static void closeDriver() {
-        String scenarioTag = getCurrentScenarioTag();
-
-        if (scenarioTag != null) {
-            if (scenarioTag.equals("@browserMobile")) {
-                if (mobileDriverPool.get() != null) {
-                    mobileDriverPool.get().quit();
-                    mobileDriverPool.remove();
-                }
-            } else {
-                if (webDriverPool.get() != null) {
-                    webDriverPool.get().quit();
-                    webDriverPool.remove();
-                }
-            }
+        if (driverPool.get() != null) {
+            driverPool.get().quit();
+            driverPool.remove();
         }
     }
 }
