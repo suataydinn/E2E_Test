@@ -118,7 +118,7 @@ public class SearchResultPage extends MainPage {
         ArrayList<String> UI_List;
 
 
-        String scenarioTag = Driver.getCurrentScenarioTag();
+        String scenarioTag = Hooks.publicScenario;
             if (scenarioTag.equals("@browserMobile")) {
                 UI_List = BrowserUtils.createArrayList(allMobileCarsTotalPrice);
             } else {

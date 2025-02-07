@@ -41,7 +41,7 @@ public class SearchResultDefs {
         BrowserUtils.waitForClickability(page.firstCarForWait,9);
         BrowserUtils.verifyElementDisplayed(page.changeDateLocator);
 
-        String scenarioTag = Driver.getCurrentScenarioTag();
+        String scenarioTag = Hooks.publicScenario;
         if (scenarioTag.equals("@browserMobile")) {
             BrowserUtils.verifyElementDisplayed(searchResultPage.mobileSort);
         }else{
