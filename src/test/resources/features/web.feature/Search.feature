@@ -1,5 +1,5 @@
  @regression
- #@browserWeb
+ @browserWeb
 Feature: This feature contains create a new reservation
 
  # @WEB-001

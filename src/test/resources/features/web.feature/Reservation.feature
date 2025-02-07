@@ -1,4 +1,5 @@
 @regression
+@browserWeb
 
 Feature: This feature contains create a new reservation
 
