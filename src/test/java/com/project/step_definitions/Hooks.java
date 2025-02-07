@@ -9,28 +9,24 @@ import io.cucumber.java.Scenario;
 import org.openqa.selenium.*;
 
 public class Hooks {
+    public static String publicScenario; // Senaryo tag'ini saklamak için
+
     @Before
     public void setUp(Scenario scenario) {
-        String scenarioTag = null;
-
         for (String tag : scenario.getSourceTagNames()) {
+            System.out.println("tag = " + tag);
             if (tag.equals("@browserWeb") || tag.equals("@browserMobile")) {
-                scenarioTag = tag;
+                publicScenario = tag;
                 break;
             }
         }
 
-        if (scenarioTag == null) {
+        if (publicScenario == null) {
             throw new IllegalStateException("No browser type specified for scenario");
         }
 
-        Driver.setCurrentScenarioTag(scenarioTag);
-
         WebDriver driver = Driver.get();
-
         driver.manage().window().setSize(new Dimension(1440, 900));
-
-
         driver.get(ConfigurationReader.get("url"));
         BrowserUtils.waitForPageToLoad(30);
         BrowserUtils.scrollToSize(0, -500);
@@ -40,6 +36,7 @@ public class Hooks {
             popupClose.click();
         } catch (Exception ignored) {}
     }
+
 
     @After
     public void tearDown(Scenario scenario) {
