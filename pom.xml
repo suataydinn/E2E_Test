@@ -148,7 +148,7 @@
         <version>3.2.2</version>
         <configuration>
           <parallel>classes</parallel>
-          <threadCount>4</threadCount>
+          <threadCount>2</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
           <testFailureIgnore>true</testFailureIgnore>
           <includes>
