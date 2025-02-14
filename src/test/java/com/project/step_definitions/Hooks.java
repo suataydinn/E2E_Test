@@ -9,7 +9,7 @@ import io.cucumber.java.Scenario;
 import org.openqa.selenium.*;
 
 public class Hooks {
-    public static String publicScenario; // Senaryo tag'ini saklamak için
+    public static String publicScenario;
 
     @Before
     public void setUp(Scenario scenario) {
